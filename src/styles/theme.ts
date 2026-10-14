@@ -9,20 +9,27 @@ export const palette = {
   /** 品牌主色 */
   brand: '#2563eb',
   brandHover: '#1d4fd8',
-  /** 主色浅底（统计卡图标、提示块） */
+  /** 主色浅底（提示块等） */
   brandSoft: '#eff4ff',
+  /** 品牌渐变（AD X 风格：图标芯片 / 头图强调） */
+  gradientBrand: 'linear-gradient(135deg, #2563eb 0%, #6366f1 100%)',
   /** 导航深色（侧边栏 / 顶栏） */
   navy: '#0b1b33',
   navyElevated: '#12294a',
   /** 页面底色 */
-  pageBg: '#f4f6f9',
+  pageBg: '#f7f8fa',
   surface: '#ffffff',
-  border: 'rgba(27, 42, 67, 0.08)',
+  border: 'rgba(15, 23, 42, 0.06)',
+  /** 卡片阴影：贴地一层 + 环境一层（AD X 柔和分层） */
+  shadowCard:
+    '0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(15, 23, 42, 0.06)',
+  shadowCardHover:
+    '0 2px 4px rgba(15, 23, 42, 0.05), 0 16px 40px rgba(37, 99, 235, 0.14)',
   /** 次要文字 */
   textSecondary: '#8c8c8c',
   /** 圆角 */
-  radiusCard: 12,
-  radiusControl: 8,
+  radiusCard: 16,
+  radiusControl: 10,
   /** 时间轴网格线 */
   hourLine: '#eceff3',
   /** 预订块语义色 */

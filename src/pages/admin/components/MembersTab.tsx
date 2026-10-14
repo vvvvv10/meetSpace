@@ -12,12 +12,14 @@ import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
 import type { DemoProfileEntry } from '@/services/auth';
 import { loadDemoProfiles } from '@/services/auth';
+import { palette } from '@/styles/theme';
 
 const useStyles = createStyles(({ css, token }) => ({
   card: css`
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
     padding: 16px 18px;
   `,
   header: css`

@@ -42,6 +42,7 @@ import {
   toMin,
   useMeetState,
 } from '@/store/meetStore';
+import { palette } from '@/styles/theme';
 
 const useStyles = createStyles(({ css, token }) => ({
   page: css`
@@ -81,9 +82,10 @@ const useStyles = createStyles(({ css, token }) => ({
     align-items: center;
     justify-content: space-between;
     padding: 18px 20px;
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
   `,
   statLabel: css`
     font-size: 14px;
@@ -103,15 +105,17 @@ const useStyles = createStyles(({ css, token }) => ({
     width: 42px;
     height: 42px;
     border-radius: 10px;
-    background: #eff4ff;
-    color: #2563eb;
+    background: ${palette.gradientBrand};
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
     font-size: 19px;
   `,
   filterCard: css`
     padding: 16px 18px;
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
     margin-bottom: 16px;
   `,
   filterLabel: css`
@@ -121,9 +125,10 @@ const useStyles = createStyles(({ css, token }) => ({
     margin-bottom: 6px;
   `,
   listCard: css`
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
     overflow: hidden;
   `,
   note: css`

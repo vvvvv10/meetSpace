@@ -152,9 +152,9 @@ export default defineConfig({
       theme: {
         token: {
           fontFamily: 'AlibabaSans, sans-serif',
-          // 与效果图一致的主色与圆角体系
+          // 与效果图一致的主色；圆角对齐 AD X 风格
           colorPrimary: '#2563eb',
-          borderRadius: 8,
+          borderRadius: 10,
         },
       },
     },

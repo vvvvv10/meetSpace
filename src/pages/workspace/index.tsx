@@ -36,6 +36,7 @@ import {
   todayStr,
   useMeetState,
 } from '@/store/meetStore';
+import { palette } from '@/styles/theme';
 
 const WEEKDAYS = [
   '星期日',
@@ -89,8 +90,8 @@ const useStyles = createStyles(({ css, token }) => ({
     gap: 16px;
     margin-bottom: 16px;
     padding: 26px 28px;
-    border-radius: 14px;
-    background: linear-gradient(150deg, #2563eb, #0e2d69);
+    border-radius: ${palette.radiusCard}px;
+    background: linear-gradient(135deg, #1e56e0 0%, #4f46e5 100%);
     color: #fff;
 
     @media (max-width: 560px) {
@@ -171,9 +172,10 @@ const useStyles = createStyles(({ css, token }) => ({
     justify-content: space-between;
     gap: 12px;
     padding: 18px 20px;
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
   `,
   statLabel: css`
     font-size: 14px;
@@ -194,8 +196,9 @@ const useStyles = createStyles(({ css, token }) => ({
     width: 42px;
     height: 42px;
     border-radius: 10px;
-    background: #eff4ff;
-    color: #2563eb;
+    background: ${palette.gradientBrand};
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
     font-size: 19px;
   `,
   mainRow: css`
@@ -206,9 +209,10 @@ const useStyles = createStyles(({ css, token }) => ({
     flex-direction: column;
     height: 100%;
     padding: 18px 20px;
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
   `,
   sectionHead: css`
     display: flex;
@@ -311,17 +315,20 @@ const useStyles = createStyles(({ css, token }) => ({
     gap: 14px;
     height: 100%;
     padding: 18px 20px;
-    background: #fff;
-    border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    background: ${palette.surface};
+    border: 1px solid ${palette.border};
+    border-radius: ${palette.radiusCard}px;
+    box-shadow: ${palette.shadowCard};
     cursor: pointer;
     transition:
+      transform 0.2s,
       border-color 0.2s,
       box-shadow 0.2s;
 
     &:hover {
-      border-color: #2563eb;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+      border-color: ${palette.brand};
+      transform: translateY(-2px);
+      box-shadow: ${palette.shadowCardHover};
     }
   `,
   entryIcon: css`
@@ -332,8 +339,9 @@ const useStyles = createStyles(({ css, token }) => ({
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: #eff4ff;
-    color: #2563eb;
+    background: ${palette.gradientBrand};
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
     font-size: 20px;
   `,
   entryTitle: css`

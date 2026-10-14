@@ -13,10 +13,11 @@ const TOTAL = DAY_END - DAY_START;
 
 const useStyles = createStyles(({ css, token }) => ({
   wrap: css`
-    border: 1px solid ${token.colorBorderSecondary};
+    border: 1px solid ${palette.border};
     border-radius: ${palette.radiusCard}px;
     overflow: hidden;
     background: ${palette.surface};
+    box-shadow: ${palette.shadowCard};
   `,
   head: css`
     display: flex;
