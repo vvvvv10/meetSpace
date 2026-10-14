@@ -1,0 +1,22 @@
+/**
+ * 这个文件作为组件的目录
+ * 统一管理对外输出的组件
+ */
+
+/**
+ * 布局组件
+ */
+import Footer from './Footer';
+
+/**
+ * 业务组件
+ */
+export { default as ArticleListContent } from './ArticleListContent';
+export { default as AvatarList } from './AvatarList';
+export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as HeaderBar } from './HeaderBar';
+export { default as OfflineBanner } from './OfflineBanner';
+export { default as StandardFormRow } from './StandardFormRow';
+export { default as TagSelect } from './TagSelect';
+
+export { Footer };
