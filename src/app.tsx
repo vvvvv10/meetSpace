@@ -90,9 +90,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     navTheme: 'light',
     layout: 'side',
     fixSiderbar: true,
-    fixedHeader: true,
-    // 自定义顶栏：品牌 / 视图切换 / 重置演示数据 / 当前用户
-    headerRender: () => <HeaderBar />,
+    // 注意：pro-components v3 的 side 布局不再渲染顶栏——DefaultHeader 对
+    // layout==='side' 直接 return null，headerRender 根本不会被调用（且该行为
+    // 在最新 beta 3.1.15-7 中仍然保留，属既定设计）。因此自定义顶栏改为在
+    // childrenRender 里渲染，HeaderBar 自身用 position: sticky 固定在内容区顶部。
     // 侧边栏菜单分组标题
     menuHeaderRender: () => (
       <div
@@ -127,7 +128,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       }
     },
     childrenRender: (children) => {
-      return <>{children}</>;
+      return (
+        <>
+          <HeaderBar />
+          {children}
+        </>
+      );
     },
     ...initialState?.settings,
     // 深色导航 token：侧边栏与顶栏同色，选中项为主色块（对齐效果图）
