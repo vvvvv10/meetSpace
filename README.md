@@ -16,7 +16,7 @@
 | 我的预订 | 我的会议列表、状态筛选、签到 / 取消 / 详情 |
 | 管理中心 | 会议室管理（增删改）、预订管理（按日期）、成员花名册（接入用户中心开放接口） |
 
-演示数据保存在 `localStorage`（`meetspace.data.v2`），顶栏「**重置演示数据**」随时恢复初始状态；跨天打开会自动按当天重新播种演示数据（保留你手工创建的预订）。
+数据存储分两级：**线上**走服务器 MySQL（新建 `meetspace` 库 + `meetspace-api` 数据服务，多人共享、跨端实时同步），接口不可用或本地开发时自动回退 `localStorage` 演示数据。顶栏「**重置演示数据**」随时恢复初始种子数据（线上 = 重新播种数据库）。
 
 ## 快速开始
 
@@ -46,7 +46,23 @@ npm run lint       # Biome + tsc
 | `POST /api/open/auth/login` | 账号密码登录，换 access(15min)/refresh(15d) 双令牌 |
 | `POST /api/open/auth/verify` / `refresh` | 会话保鲜：过期自动轮换令牌（`src/services/auth.ts`） |
 
-> 会议室与预订数据由前端本地维护（用户中心只开放用户能力）。
+> 会议室与预订数据由本项目自建的数据服务维护（用户中心只开放用户能力，见下节）。
+
+## 数据服务（MySQL）
+
+线上部署使用服务器自带的 MySQL 8（`stack-mysql` 容器）新建 **`meetspace`** 库（`rooms` / `bookings` 两表 + 种子数据），由 **`meetspace-api`** 服务（Node 20 + Express，systemd 常驻 `127.0.0.1:8088`，代码在服务器 `/opt/meetspace-api/`）提供 REST 接口，nginx 同源反代 `/api/meet/` → 8088：
+
+| 接口 | 用途 |
+| --- | --- |
+| `GET /api/meet/rooms` | 会议室列表 |
+| `POST` `PATCH` `DELETE /api/meet/rooms/:id` | 会议室增改删（管理中心） |
+| `GET /api/meet/bookings?from=&to=` | 日期区间预订查询 |
+| `POST /api/meet/bookings` | 新建预订（服务端做 SQL 冲突检测，冲突返回 409） |
+| `PATCH` `DELETE /api/meet/bookings/:id` | 签到 / 取消 / 删除 |
+| `POST /api/meet/reset` | 重置演示数据（重新播种） |
+
+- 前端 `src/store/meetStore.ts` 首帧后拉取服务端数据并每 30s 轮询，写操作乐观更新 + 异步落库；服务端不可用时静默回退 localStorage 演示模式（本地开发即此模式）
+- 服务端账号：`meetspace`（仅授权 `meetspace` 库）；演示项目，接口本身不做独立鉴权（仅内网 + nginx 同源反代可达），预订人身份由前端随请求携带
 
 ## 目录结构
 
@@ -59,7 +75,7 @@ src/
     openapi.ts     用户中心开放接口（双通道鉴权）
     auth.ts        会话管理：演示登录 / 密码登录 / 令牌刷新
   store/
-    meetStore.ts   会议室与预订数据仓库（种子数据 + localStorage）
+    meetStore.ts   会议室与预订数据仓库（服务端 /api/meet 优先，localStorage 兜底）
     viewStore.ts   预订页视图切换（现代 / 经典 / 日历）
   components/
     HeaderBar      自定义顶栏：品牌 / 视图切换 / 重置演示数据 / 用户

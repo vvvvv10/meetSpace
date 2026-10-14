@@ -1,10 +1,16 @@
 /**
- * MeetSpace 演示数据仓库
+ * MeetSpace 数据仓库
  *
- * 会议室 / 预订数据为本地演示数据（后端仅开放用户中心），
- * 持久化在 localStorage，支持「重置演示数据」。
- * 预订是否“我的”由 ownerId === 当前登录用户判断（种子数据 ownerId=0 表示“我”）。
+ * 数据来源分两级：
+ * 1. 服务端模式（线上部署）：同源 `/api/meet/*` 数据服务（MySQL），
+ *    会议室与预订落库、多人共享，每 30s 轮询同步；
+ * 2. 本地演示模式（服务端不可用 / 本地开发）：localStorage 演示数据，
+ *    支持「重置演示数据」。
+ *
+ * 预订是否“我的”由 ownerId === 当前登录用户判断
+ * （本地演示种子数据 ownerId=0 表示“我”）。
  */
+import { message } from 'antd';
 import dayjs from 'dayjs';
 import { useSyncExternalStore } from 'react';
 
@@ -482,8 +488,86 @@ export function useMeetState(): MeetState {
 
 export const getState = () => state;
 
-/** 某一天的全部预订（种子 + 演示生成 + 手工创建） */
+/* ------------------------------------------------------------------ */
+/* 服务端同步                                                           */
+/* ------------------------------------------------------------------ */
+
+const MEET_API = '/api/meet';
+
+/** 是否已连上数据服务（false = 本地演示数据模式） */
+let remote = false;
+let hydratedOnce = false;
+
+const dateAdd = (base: string, delta: number) =>
+  dayjs(base).add(delta, 'day').format('YYYY-MM-DD');
+
+async function api<T>(
+  path: string,
+  method = 'GET',
+  body?: unknown,
+): Promise<T> {
+  const res = await fetch(`${MEET_API}${path}`, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    let msg = `请求失败 (${res.status})`;
+    try {
+      const data = (await res.json()) as { message?: string };
+      if (data?.message) msg = data.message;
+    } catch {
+      /* 保底文案 */
+    }
+    throw new Error(msg);
+  }
+  return (await res.json()) as T;
+}
+
+/**
+ * 拉取服务端全量数据（前 30 天 ~ 后 90 天）。
+ * 首次连上切换为服务端模式；后续偶发失败保持模式不变，下次轮询恢复。
+ */
+export async function hydrateFromServer(): Promise<boolean> {
+  try {
+    const from = dateAdd(todayStr(), -30);
+    const to = dateAdd(todayStr(), 90);
+    const [rooms, bookings] = await Promise.all([
+      api<Room[]>('/rooms'),
+      api<Booking[]>(`/bookings?from=${from}&to=${to}`),
+    ]);
+    remote = true;
+    hydratedOnce = true;
+    setState({
+      rooms,
+      customBookings: bookings.map((b) => ({
+        ...b,
+        custom: (b as Booking & { source?: string }).source === 'user',
+      })),
+      seedDate: todayStr(),
+    });
+    return true;
+  } catch {
+    if (!hydratedOnce) remote = false;
+    return false;
+  }
+}
+
+/** 本地状态变更后，用服务端数据刷新校正（服务端是唯一事实源） */
+function syncToServer(label: string) {
+  if (!remote) return;
+  void hydrateFromServer().then((ok) => {
+    if (!ok) message.error(`${label}同步失败，已回退为服务端数据`);
+  });
+}
+
+/** 某一天的全部预订（服务端模式直接取库数据；本地为 种子 + 演示生成 + 手工创建） */
 export function getBookingsByDate(s: MeetState, date: string): Booking[] {
+  if (remote) {
+    return s.customBookings
+      .filter((b) => b.date === date)
+      .sort((a, b) => toMin(a.start) - toMin(b.start));
+  }
   const seeded =
     s.seedDate === date
       ? seedBookingsFor(s.seedDate)
@@ -505,6 +589,14 @@ export function getBookingsByDate(s: MeetState, date: string): Booking[] {
 
 /** 我的全部预订（升序） */
 export function getMyBookings(s: MeetState, userId?: number): Booking[] {
+  if (remote) {
+    return s.customBookings
+      .filter((b) => isMine(b, userId) && b.status !== 'canceled')
+      .sort(
+        (a, b) =>
+          a.date.localeCompare(b.date) || toMin(a.start) - toMin(b.start),
+      );
+  }
   const dates = new Set<string>();
   seedBookingsFor(s.seedDate).forEach((b) => {
     dates.add(b.date);
@@ -579,8 +671,35 @@ export function createBooking(
     ...s,
     customBookings: [...s.customBookings, booking],
   });
+  if (remote) {
+    // 服务端模式：乐观写入后异步落库（服务端会二次做 SQL 冲突检测）
+    api('/bookings', 'POST', { ...input, status: booking.status })
+      .then(() => {
+        syncToServer('预订');
+      })
+      .catch((e: Error) => {
+        setState({
+          ...state,
+          customBookings: state.customBookings.filter(
+            (b) => b.id !== booking.id,
+          ),
+        });
+        message.error(`预订失败：${e.message}`);
+      });
+  }
   return booking;
 }
+
+/** 可同步到服务端的预订字段 */
+const PATCHABLE: (keyof Booking)[] = [
+  'title',
+  'start',
+  'end',
+  'roomId',
+  'attendees',
+  'note',
+  'status',
+];
 
 export function updateBooking(id: string, patch: Partial<Booking>) {
   setState({
@@ -589,28 +708,36 @@ export function updateBooking(id: string, patch: Partial<Booking>) {
       b.id === id ? { ...b, ...patch } : b,
     ),
   });
+  if (remote) {
+    const body = Object.fromEntries(
+      PATCHABLE.filter((k) => patch[k] !== undefined).map((k) => [k, patch[k]]),
+    );
+    api(`/bookings/${id}`, 'PATCH', body)
+      .then(() => {
+        syncToServer('预订');
+      })
+      .catch((e: Error) => {
+        void hydrateFromServer();
+        message.error(`更新失败：${e.message}`);
+      });
+  }
 }
 
 export function cancelBooking(id: string) {
-  setState({
-    ...state,
-    customBookings: state.customBookings.map((b) =>
-      b.id === id ? { ...b, status: 'canceled' as const } : b,
-    ),
-  });
+  updateBooking(id, { status: 'canceled' });
 }
 
 export function checkInBooking(id: string) {
-  setState({
-    ...state,
-    customBookings: state.customBookings.map((b) =>
-      b.id === id ? { ...b, status: 'checked-in' as const } : b,
-    ),
-  });
+  updateBooking(id, { status: 'checked-in' });
 }
 
 /** 种子数据（非 custom）的签到/取消：转成 custom 覆盖 */
 function promote(id: string, patch: Partial<Booking>) {
+  if (remote) {
+    // 服务端模式下所有预订都在状态里，直接走通用更新
+    updateBooking(id, patch);
+    return;
+  }
   const existing = state.customBookings.find((b) => b.id === id);
   if (existing) {
     setState({
@@ -664,11 +791,34 @@ export function deleteBooking(id: string) {
     ...state,
     customBookings: state.customBookings.filter((b) => b.id !== id),
   });
+  if (remote) {
+    api(`/bookings/${id}`, 'DELETE')
+      .then(() => {
+        syncToServer('预订');
+      })
+      .catch((e: Error) => {
+        void hydrateFromServer();
+        message.error(`删除失败：${e.message}`);
+      });
+  }
 }
 
 export function addRoom(room: Omit<Room, 'id' | 'custom'>): Room {
   const newRoom: Room = { ...room, id: uid('r'), custom: true };
   setState({ ...state, rooms: [...state.rooms, newRoom] });
+  if (remote) {
+    api<Room>('/rooms', 'POST', room)
+      .then(() => {
+        syncToServer('会议室');
+      })
+      .catch((e: Error) => {
+        setState({
+          ...state,
+          rooms: state.rooms.filter((r) => r.id !== newRoom.id),
+        });
+        message.error(`新增失败：${e.message}`);
+      });
+  }
   return newRoom;
 }
 
@@ -677,6 +827,16 @@ export function updateRoom(id: string, patch: Partial<Room>) {
     ...state,
     rooms: state.rooms.map((r) => (r.id === id ? { ...r, ...patch } : r)),
   });
+  if (remote) {
+    api(`/rooms/${id}`, 'PATCH', patch)
+      .then(() => {
+        syncToServer('会议室');
+      })
+      .catch((e: Error) => {
+        void hydrateFromServer();
+        message.error(`更新失败：${e.message}`);
+      });
+  }
 }
 
 export function deleteRoom(id: string) {
@@ -685,10 +845,28 @@ export function deleteRoom(id: string) {
     rooms: state.rooms.filter((r) => r.id !== id),
     customBookings: state.customBookings.filter((b) => b.roomId !== id),
   });
+  if (remote) {
+    api(`/rooms/${id}`, 'DELETE')
+      .then(() => {
+        syncToServer('会议室');
+      })
+      .catch((e: Error) => {
+        void hydrateFromServer();
+        message.error(`删除失败：${e.message}`);
+      });
+  }
 }
 
-/** 重置演示数据（保留登录态） */
+/** 重置演示数据（保留登录态；服务端模式 = 重新播种数据库预订） */
 export function resetDemoData() {
+  if (remote) {
+    api('/reset', 'POST')
+      .then(() => hydrateFromServer())
+      .catch((e: Error) => {
+        message.error(`重置失败：${e.message}`);
+      });
+    return;
+  }
   localStorage.removeItem(STORAGE_KEY);
   setState(seedState());
 }
@@ -737,4 +915,15 @@ export function freeRoomsNow(s: MeetState, date = todayStr()): Room[] {
         overlap(toMin(b.start), toMin(b.end), nowMin, nowMin + 1),
     );
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* 启动同步（仅浏览器）：首次拉取服务端数据，之后每 30s 轮询刷新，        */
+/* 让多端预订实时共享；服务端不可用时静默停留在本地演示模式               */
+/* ------------------------------------------------------------------ */
+if (typeof window !== 'undefined') {
+  void hydrateFromServer();
+  window.setInterval(() => {
+    void hydrateFromServer();
+  }, 30_000);
 }
