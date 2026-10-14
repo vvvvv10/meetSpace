@@ -168,7 +168,7 @@ const MyBookingsPage: React.FC = () => {
    */
   const myBookings = useMemo(() => {
     const active = getMyBookings(state, userId);
-    const canceled = state.customBookings.filter(
+    const canceled = state.bookings.filter(
       (b) => b.status === 'canceled' && isMine(b, userId),
     );
     return [...active, ...canceled].sort(

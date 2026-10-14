@@ -16,7 +16,7 @@
 | 我的预订 | 我的会议列表、状态筛选、签到 / 取消 / 详情 |
 | 管理中心 | 会议室管理（增删改）、预订管理（按日期）、成员花名册（接入用户中心开放接口） |
 
-数据存储分两级：**线上**走服务器 MySQL（新建 `meetspace` 库 + `meetspace-api` 数据服务，多人共享、跨端实时同步），接口不可用或本地开发时自动回退 `localStorage` 演示数据。顶栏「**重置演示数据**」随时恢复初始种子数据（线上 = 重新播种数据库）。
+数据全部存储在服务器 MySQL（新建 `meetspace` 库 + `meetspace-api` 数据服务），多人共享、跨端实时同步；前端不再维护任何本地演示数据（本地开发也通过 dev 代理直连线上数据服务）。顶栏「**重置演示数据**」= 服务端重新播种数据库。
 
 ## 快速开始
 
@@ -61,7 +61,7 @@ npm run lint       # Biome + tsc
 | `PATCH` `DELETE /api/meet/bookings/:id` | 签到 / 取消 / 删除 |
 | `POST /api/meet/reset` | 重置演示数据（重新播种） |
 
-- 前端 `src/store/meetStore.ts` 首帧后拉取服务端数据并每 30s 轮询，写操作乐观更新 + 异步落库；服务端不可用时静默回退 localStorage 演示模式（本地开发即此模式）
+- 前端 `src/store/meetStore.ts` 首帧后拉取服务端数据并每 30s 轮询，写操作乐观更新 + 异步落库；本地开发通过 `config/proxy.ts` 的 `/api/meet` 代理直连线上数据服务，接口失败会提示错误（无本地演示数据兜底）
 - 服务端账号：`meetspace`（仅授权 `meetspace` 库）；演示项目，接口本身不做独立鉴权（仅内网 + nginx 同源反代可达），预订人身份由前端随请求携带
 
 ## 目录结构
@@ -75,7 +75,7 @@ src/
     openapi.ts     用户中心开放接口（双通道鉴权）
     auth.ts        会话管理：演示登录 / 密码登录 / 令牌刷新
   store/
-    meetStore.ts   会议室与预订数据仓库（服务端 /api/meet 优先，localStorage 兜底）
+    meetStore.ts   会议室与预订数据仓库（纯服务端：/api/meet 数据库数据）
     viewStore.ts   预订页视图切换（现代 / 经典 / 日历）
   components/
     HeaderBar      自定义顶栏：品牌 / 视图切换 / 重置演示数据 / 用户

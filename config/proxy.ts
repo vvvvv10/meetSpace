@@ -20,6 +20,14 @@ export default {
       target: 'http://47.99.54.0:8080',
       changeOrigin: true,
     },
+    /**
+     * 本地开发直连线上数据服务（MySQL），
+     * 开发时看到的就是线上真实数据；服务不可用时页面会提示错误（无本地兜底）
+     */
+    '/api/meet': {
+      target: 'http://47.99.54.0:8087',
+      changeOrigin: true,
+    },
   },
   // 如果需要自定义本地开发服务器  请取消注释按需调整
   // dev: {
