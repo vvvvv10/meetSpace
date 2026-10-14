@@ -10,6 +10,7 @@ import React, { startTransition } from 'react';
 import { clearSession, deptOf, getSession } from '@/services/auth';
 import { resetDemoData } from '@/store/meetStore';
 import { setViewMode, useViewMode, type ViewMode } from '@/store/viewStore';
+import { palette } from '@/styles/theme';
 
 const useStyles = createStyles(({ css }) => ({
   header: css`
@@ -18,8 +19,12 @@ const useStyles = createStyles(({ css }) => ({
     justify-content: space-between;
     height: 64px;
     padding: 0 24px;
-    background: #001529;
+    background: ${palette.navy};
     color: #fff;
+
+    @media (max-width: 640px) {
+      padding: 0 12px;
+    }
   `,
   brand: css`
     display: flex;
@@ -34,7 +39,7 @@ const useStyles = createStyles(({ css }) => ({
     width: 34px;
     height: 34px;
     border-radius: 9px;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background: linear-gradient(135deg, #3b82f6, ${palette.brand});
     color: #fff;
     font-size: 19px;
     font-weight: 700;
@@ -44,6 +49,10 @@ const useStyles = createStyles(({ css }) => ({
     font-size: 17px;
     font-weight: 600;
     letter-spacing: 0.3px;
+
+    @media (max-width: 560px) {
+      display: none;
+    }
   `,
   center: css`
     flex: 1;

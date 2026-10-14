@@ -12,6 +12,7 @@ import { ErrorBoundary, OfflineBanner } from '@/components';
 import HeaderBar from '@/components/HeaderBar';
 import { ensureToken, getSession, refreshProfile } from '@/services/auth';
 import type { OpenUser } from '@/services/openapi';
+import { palette, siderLayoutToken } from '@/styles/theme';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
@@ -84,7 +85,7 @@ export async function getInitialState(): Promise<{
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
-    navTheme: 'dark',
+    navTheme: 'realDark',
     layout: 'side',
     fixSiderbar: true,
     fixedHeader: true,
@@ -127,6 +128,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       return <>{children}</>;
     },
     ...initialState?.settings,
+    // 深色导航 token：侧边栏与顶栏同色，选中项为主色块（对齐效果图）
+    // 注意：ProLayout 的 token 是扁平结构（sider/header/bgLayout），
+    // 内部才会合并进 ProConfigProvider 的 layout token
+    token: {
+      sider: siderLayoutToken,
+      bgLayout: palette.pageBg,
+    },
     // 登录页不使用默认头像逻辑
     avatarProps: undefined,
     title: 'MeetSpace',

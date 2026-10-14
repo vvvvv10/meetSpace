@@ -8,11 +8,15 @@
  */
 export const OPEN_API_ORIGIN = 'http://47.99.54.0:8080';
 
-/** 开发环境走 umi dev 代理（见 config/proxy.ts），生产构建直连网关 */
-export const OPEN_API_BASE =
-  process.env.NODE_ENV === 'development'
-    ? '/api/open'
-    : `${OPEN_API_ORIGIN}/api/open`;
+/**
+ * 统一走同源 `/api/open`：
+ * - 开发：umi dev 代理（config/proxy.ts）
+ * - 生产：部署机 nginx 反代到网关 127.0.0.1:8080
+ *
+ * 不能在前端直连 OPEN_API_ORIGIN：网关有 Origin 白名单，
+ * 从 http://47.99.54.0 跨域访问 :8080 会被 403 拒绝，同源反代可完全绕开。
+ */
+export const OPEN_API_BASE = '/api/open';
 
 export type OpenAuthMode = 'api_key' | 'sign';
 

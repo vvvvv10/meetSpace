@@ -37,7 +37,7 @@ npm run lint       # Biome + tsc
 
 - 封装在 `src/services/openapi.ts`，凭据配置在 `src/config.ts`
 - 支持两条通道：`api_key`（X-Api-Key 直传，默认）/ `sign`（HMAC-SHA256 签名，密钥不出网），改 `OPEN_AUTH_MODE` 即可切换
-- 开发环境通过 `config/proxy.ts` 的 `/api/open` 代理转发到网关，规避浏览器跨域；生产构建直连 `OPEN_API_ORIGIN`
+- 前端统一请求同源 `/api/open`：开发走 `config/proxy.ts` 的 dev 代理，生产部署由 nginx 反代到网关 `127.0.0.1:8080`（网关有 Origin 白名单，不可在前端跨域直连 `OPEN_API_ORIGIN`）
 - 用到的接口：
 
 | 接口 | 用途 |

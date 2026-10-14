@@ -152,6 +152,9 @@ export default defineConfig({
       theme: {
         token: {
           fontFamily: 'AlibabaSans, sans-serif',
+          // 与效果图一致的主色与圆角体系
+          colorPrimary: '#2563eb',
+          borderRadius: 8,
         },
       },
     },

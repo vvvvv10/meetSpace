@@ -8,6 +8,7 @@ import { Button, DatePicker, Flex, Input, Select, Tooltip } from 'antd';
 import { createStyles } from 'antd-style';
 import dayjs, { type Dayjs } from 'dayjs';
 import React, { useMemo, useState } from 'react';
+import { useReveal } from '@/hooks/useReveal';
 import { getSession } from '@/services/auth';
 import type { Booking, Equipment } from '@/store/meetStore';
 import {
@@ -17,6 +18,7 @@ import {
   useMeetState,
 } from '@/store/meetStore';
 import { useViewMode } from '@/store/viewStore';
+import { palette } from '@/styles/theme';
 import BookingDetail from './components/BookingDetail';
 import BookModal, { type BookPreset } from './components/BookModal';
 import CalendarView from './components/CalendarView';
@@ -26,6 +28,11 @@ import RoomTimeline from './components/RoomTimeline';
 const useStyles = createStyles(({ css, token }) => ({
   page: css`
     padding: 20px 24px 32px;
+    overflow-x: clip;
+
+    @media (max-width: 576px) {
+      padding: 16px 12px 24px;
+    }
   `,
   titleRow: css`
     display: flex;
@@ -53,6 +60,15 @@ const useStyles = createStyles(({ css, token }) => ({
     gap: 16px;
     margin-bottom: 16px;
 
+    /* 入场动画错峰（配合 .reveal，见 global.less） */
+    > *:nth-child(2) {
+      transition-delay: 80ms;
+    }
+
+    > *:nth-child(3) {
+      transition-delay: 160ms;
+    }
+
     @media (max-width: 900px) {
       grid-template-columns: 1fr;
     }
@@ -62,9 +78,9 @@ const useStyles = createStyles(({ css, token }) => ({
     align-items: center;
     justify-content: space-between;
     padding: 18px 20px;
-    background: #fff;
+    background: ${palette.surface};
     border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    border-radius: ${palette.radiusCard}px;
   `,
   statLabel: css`
     font-size: 14px;
@@ -84,15 +100,15 @@ const useStyles = createStyles(({ css, token }) => ({
     width: 42px;
     height: 42px;
     border-radius: 10px;
-    background: #eff4ff;
-    color: #2563eb;
+    background: ${palette.brandSoft};
+    color: ${palette.brand};
     font-size: 19px;
   `,
   filterCard: css`
     padding: 16px 18px;
     background: #fff;
     border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    border-radius: ${palette.radiusCard}px;
     margin-bottom: 16px;
   `,
   filterLabel: css`
@@ -104,7 +120,7 @@ const useStyles = createStyles(({ css, token }) => ({
   listCard: css`
     background: #fff;
     border: 1px solid ${token.colorBorderSecondary};
-    border-radius: 12px;
+    border-radius: ${palette.radiusCard}px;
     overflow: hidden;
   `,
 }));
@@ -112,6 +128,7 @@ const useStyles = createStyles(({ css, token }) => ({
 /** 会议室预订主页面（现代版 / 经典版 / 日历版共用顶栏切换） */
 const BookingPage: React.FC = () => {
   const { styles } = useStyles();
+  const rootRef = useReveal<HTMLDivElement>();
   const state = useMeetState();
   const viewMode = useViewMode();
   const session = getSession();
@@ -170,7 +187,7 @@ const BookingPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} ref={rootRef}>
       {/* 标题 + 快捷操作 */}
       <div className={styles.titleRow}>
         <div>
@@ -203,7 +220,7 @@ const BookingPage: React.FC = () => {
 
       {/* 统计卡片 */}
       <div className={styles.stats}>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} reveal`}>
           <div>
             <div className={styles.statLabel}>今日我的会议</div>
             <div className={styles.statValue}>{stats.myToday}</div>
@@ -212,7 +229,7 @@ const BookingPage: React.FC = () => {
             <ClockCircleOutlined />
           </div>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} reveal`}>
           <div>
             <div className={styles.statLabel}>当前可用会议室</div>
             <div className={styles.statValue}>{stats.availableRooms}</div>
@@ -221,7 +238,7 @@ const BookingPage: React.FC = () => {
             <CheckCircleOutlined />
           </div>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} reveal`}>
           <div>
             <Tooltip title="我发起的、尚未签到的会议">
               <div className={styles.statLabel} style={{ cursor: 'help' }}>
@@ -237,7 +254,7 @@ const BookingPage: React.FC = () => {
       </div>
 
       {/* 筛选 */}
-      <div className={styles.filterCard}>
+      <div className={`${styles.filterCard} reveal`}>
         <Flex gap={16} align="flex-end" wrap>
           <div style={{ width: 160 }}>
             <span className={styles.filterLabel}>楼层</span>
@@ -288,7 +305,7 @@ const BookingPage: React.FC = () => {
       </div>
 
       {/* 视图切换渲染 */}
-      <div className={styles.listCard}>
+      <div className={`${styles.listCard} reveal`}>
         {viewMode === 'modern' ? (
           <div style={{ padding: 0 }}>
             <RoomTimeline

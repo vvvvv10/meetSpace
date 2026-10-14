@@ -7,7 +7,7 @@ import {
   ProFormTextArea,
 } from '@ant-design/pro-components';
 import { App, Form } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { deptOf, getSession } from '@/services/auth';
 import {
@@ -159,7 +159,7 @@ const BookModal: React.FC<Props> = ({ open, preset, onClose, onCreated }) => {
         rules={[{ required: true, message: '请选择日期' }]}
         fieldProps={{
           allowClear: false,
-          disabledDate: (d) => d.isBefore(dayjs().startOf('day')),
+          disabledDate: (d: Dayjs) => d.isBefore(dayjs().startOf('day')),
         }}
       />
       <ProFormDigit
