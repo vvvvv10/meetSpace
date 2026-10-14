@@ -4,7 +4,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { history, useLocation, useModel } from '@umijs/max';
-import { App, Avatar, Dropdown, Segmented } from 'antd';
+import { App, Avatar, Dropdown, Segmented, Tooltip } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { startTransition } from 'react';
 import { clearSession, deptOf, getSession } from '@/services/auth';
@@ -130,6 +130,28 @@ const useStyles = createStyles(({ css }) => ({
     color: rgba(255, 255, 255, 0.75);
     font-size: 15px;
   `,
+  logoutBtn: css`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+  `,
+  avatar: css`
+    background: ${palette.gradientBrand};
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  `,
 }));
 
 const VIEW_OPTIONS: { label: string; value: ViewMode }[] = [
@@ -168,12 +190,6 @@ const HeaderBar: React.FC = () => {
       key: 'reset',
       icon: <HistoryOutlined />,
       label: '重置演示数据',
-    },
-    {
-      key: 'openapi',
-      icon: <UserOutlined />,
-      label: '用户中心接入状态',
-      disabled: true,
     },
     { type: 'divider' as const },
     {
@@ -217,8 +233,8 @@ const HeaderBar: React.FC = () => {
         >
           <div className={styles.user}>
             <Avatar
-              size={34}
-              style={{ background: '#2563eb', fontSize: 15 }}
+              size={36}
+              className={styles.avatar}
               icon={!user ? <UserOutlined /> : undefined}
             >
               {user ? user.nickname.slice(0, 1) : undefined}
@@ -226,11 +242,16 @@ const HeaderBar: React.FC = () => {
             <div className={styles.userText}>
               <div className="name">{user?.nickname || '未登录'}</div>
               <div className="dept">
-                {user ? deptOf(user) : '点击头像菜单退出'}
+                {user ? deptOf(user) : '点击头像查看菜单'}
               </div>
             </div>
           </div>
         </Dropdown>
+        <Tooltip title="退出登录">
+          <div className={styles.logoutBtn} onClick={handleLogout}>
+            <LogoutOutlined />
+          </div>
+        </Tooltip>
       </div>
       {/* 保留 initialState 引用，切换用户时触发重渲染 */}
       <span style={{ display: 'none' }}>{initialState?.currentUser?.name}</span>
