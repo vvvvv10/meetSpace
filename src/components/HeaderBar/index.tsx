@@ -11,6 +11,7 @@ import { clearSession, deptOf, getSession } from '@/services/auth';
 import { resetDemoData } from '@/store/meetStore';
 import { setViewMode, useViewMode, type ViewMode } from '@/store/viewStore';
 import { palette } from '@/styles/theme';
+import { mockAvatarOf } from '@/utils/avatar';
 
 const useStyles = createStyles(({ css }) => ({
   header: css`
@@ -235,6 +236,7 @@ const HeaderBar: React.FC = () => {
             <Avatar
               size={36}
               className={styles.avatar}
+              src={mockAvatarOf(user?.id)}
               icon={!user ? <UserOutlined /> : undefined}
             >
               {user ? user.nickname.slice(0, 1) : undefined}

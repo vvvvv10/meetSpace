@@ -7,12 +7,13 @@
  */
 import { ReloadOutlined } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
-import { Alert, Button, Space, Spin, Table, Tag } from 'antd';
+import { Alert, Avatar, Button, Space, Spin, Table, Tag } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
 import type { DemoProfileEntry } from '@/services/auth';
 import { loadDemoProfiles } from '@/services/auth';
 import { palette } from '@/styles/theme';
+import { mockAvatarOf } from '@/utils/avatar';
 
 const useStyles = createStyles(({ css, token }) => ({
   card: css`
@@ -76,7 +77,19 @@ const renderRoles = (roles: string[]): React.ReactNode => {
 
 const columns: TableColumnsType<DemoProfileEntry> = [
   { title: 'ID', dataIndex: ['user', 'id'], width: 70 },
-  { title: '昵称', dataIndex: ['user', 'nickname'], width: 130 },
+  {
+    title: '昵称',
+    key: 'nickname',
+    width: 150,
+    render: (_, entry) => (
+      <Space size={8}>
+        <Avatar size={26} src={mockAvatarOf(entry.user.id)}>
+          {entry.user.nickname?.slice(0, 1)}
+        </Avatar>
+        {entry.user.nickname}
+      </Space>
+    ),
+  },
   { title: '账号', dataIndex: ['user', 'account'], width: 140 },
   {
     title: '租户 / 部门',
