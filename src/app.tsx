@@ -85,7 +85,9 @@ export async function getInitialState(): Promise<{
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
-    navTheme: 'realDark',
+    // navTheme 用 light：realDark 会把整个内容区也套上暗色算法（白字+白底卡片看不清），
+    // 侧边栏深色完全由下方 token.sider 显式控制
+    navTheme: 'light',
     layout: 'side',
     fixSiderbar: true,
     fixedHeader: true,

@@ -6,7 +6,7 @@ import type { ProLayoutProps } from '@ant-design/pro-components';
 const Settings: ProLayoutProps & {
   logo?: React.ReactNode;
 } = {
-  navTheme: 'realDark',
+  navTheme: 'light',
   colorPrimary: '#2563eb',
   layout: 'side',
   contentWidth: 'Fluid',
