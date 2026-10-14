@@ -89,11 +89,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     // 侧边栏深色完全由下方 token.sider 显式控制
     navTheme: 'light',
     layout: 'side',
-    fixSiderbar: true,
-    // 注意：pro-components v3 的 side 布局不再渲染顶栏——DefaultHeader 对
-    // layout==='side' 直接 return null，headerRender 根本不会被调用（且该行为
-    // 在最新 beta 3.1.15-7 中仍然保留，属既定设计）。因此自定义顶栏改为在
-    // childrenRender 里渲染，HeaderBar 自身用 position: sticky 固定在内容区顶部。
+    // 顶栏由 rootContainer 全宽渲染（见下方 GlobalHeaderShell），
+    // v3 side 布局的 fixSiderbar 会让侧边栏 fixed 到 top:0 与顶栏重叠，
+    // 这里关闭，改用 global.less 里的 sticky 规则把侧边栏吸附在顶栏下方
+    fixSiderbar: false,
     // 侧边栏菜单分组标题
     menuHeaderRender: () => (
       <div
@@ -127,9 +126,16 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
         );
       }
     },
+    // 顶栏高 64px（rootContainer 全宽渲染），内容区最小高度扣掉它，
+    // 同时会归零 ProLayout 行容器内联的 min-height:100vh，避免页面出现 64px 冗余滚动
+    contentStyle: {
+      minHeight: 'calc(100vh - 64px)',
+    },
     childrenRender: (children) => {
       return (
         <>
+          {/* v3 side 布局无顶栏，自渲染 HeaderBar；fixed 定位使其横跨整个
+              窗口宽度（不受内容列约束），布局用 global.less 的 padding-top 让位 */}
           <HeaderBar />
           {children}
         </>

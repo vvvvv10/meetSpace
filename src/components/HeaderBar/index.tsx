@@ -22,9 +22,12 @@ const useStyles = createStyles(({ css }) => ({
     padding: 0 24px;
     background: ${palette.navy};
     color: #fff;
-    /* v3 side 布局无顶栏，HeaderBar 在内容区内自渲染，sticky 模拟固定顶栏 */
-    position: sticky;
+    /* v3 side 布局无顶栏，HeaderBar 在内容列内自渲染；
+       fixed 横跨全窗口宽度，布局用 global.less 的 padding-top 让位 */
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 30;
 
     @media (max-width: 640px) {

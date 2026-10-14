@@ -113,3 +113,19 @@ ol {
     transition: none !important;
   }
 }
+
+/* ---- v3 side 布局无顶栏方案：HeaderBar fixed 横跨全宽（64px），
+   布局整体让位；侧边栏吸附在顶栏下方 ----
+   fixSiderbar 已关闭（其 fixed top:0 会与顶栏重叠），改用 sticky */
+.ant-pro-layout .ant-layout {
+  padding-top: 64px;
+}
+
+@media (min-width: 769px) {
+  .ant-pro-layout .ant-layout-sider {
+    position: sticky;
+    top: 64px;
+    align-self: flex-start;
+    height: calc(100vh - 64px);
+  }
+}

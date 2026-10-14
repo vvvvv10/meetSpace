@@ -11,7 +11,8 @@ const Settings: ProLayoutProps & {
   layout: 'side',
   contentWidth: 'Fluid',
   fixedHeader: true,
-  fixSiderbar: true,
+  // 顶栏在 rootContainer 全宽渲染，侧边栏用 sticky 吸附在其下方（见 global.less）
+  fixSiderbar: false,
   colorWeak: false,
   title: 'MeetSpace',
   logo: false,
